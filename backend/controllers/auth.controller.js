@@ -21,6 +21,12 @@ export const signUp = async (req, res) => {
       return res.status(400).json({ error: "Email already registered" });
     }
 
+    if (password.length < 6) {
+      return res
+        .status(400)
+        .json({ error: "Password must be at least 6 characters long" });
+    }
+
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -53,13 +59,53 @@ export const signUp = async (req, res) => {
   }
 };
 
-export const login = (req, res) => {
+export const login = async (req, res) => {
   try {
-  } catch (error) {}
+    const { username, password } = req.body;
+    const user = await User.findOne({ username });
+    const isPasswordCorrect = await bcrypt.compare(
+      password,
+      user?.password || ""
+    );
+
+    if (!user || !isPasswordCorrect) {
+      return res.status(401).json({ error: "Invalid username or password" });
+    }
+    generateTokenAndSetCookie(user._id, res);
+    res.status(200).json({
+      _id: user._id,
+      username: user.username,
+      fullName: user.fullName,
+      email: user.email,
+      followers: user.followers,
+      following: user.following,
+      profileImg: user.profileImg,
+      coverImg: user.coverImg,
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error" });
+    console.error("Login Error:", error);
+  }
 };
 
-export const logout = (req, res) => {
-  res.json({
-    data: "Logout route",
-  });
+export const logout = async (req, res) => {
+  try {
+    res.cookie("jwt", "", { maxAge: 0 });
+    res.status(200).json({ message: "Logged out successfully" });
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error" });
+    console.error("Logout Error:", error);
+  }
+};
+
+export const getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error" });
+    console.error("GetMe Error:", error);
+  }
 };
