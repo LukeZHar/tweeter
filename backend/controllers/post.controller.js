@@ -1,5 +1,6 @@
 import User from "../models/user.model.js";
 import Post from "../models/post.model.js";
+import Notification from "../models/notification.model.js";
 import { v2 as cloudinary } from "cloudinary";
 
 export const createPost = async (req, res) => {
@@ -53,6 +54,12 @@ export const likeUnlikePost = async (req, res) => {
       );
     }
 
+    const newNotification = new Notification({
+      type: "like",
+      from: req.user._id,
+      to: post.user,
+    });
+    await newNotification.save();
     await post.save();
     res.status(200).json({ message: `Post ${likeUnlike}d successfully` });
   } catch (error) {
@@ -72,8 +79,18 @@ export const commentOnPost = async (req, res) => {
       text: req.body.text,
       createdAt: new Date(),
     };
+    if (!comment.text) {
+      return res.status(400).json({ error: "Comment cannot be empty" });
+    }
 
     post.comments.push(comment);
+
+    const newNotification = new Notification({
+      type: "comment",
+      from: req.user._id,
+      to: post.user,
+    });
+    await newNotification.save();
     await post.save();
     res.status(200).json({ message: "Comment added successfully" });
   } catch (error) {
