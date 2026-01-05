@@ -36,8 +36,51 @@ export const createPost = async (req, res) => {
   }
 };
 
-export const likeUnlikePost = async (req, res) => {};
-export const commentOnPost = async (req, res) => {};
+export const likeUnlikePost = async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+    const user = req.user._id;
+    const likeUnlike = post.likes.includes(user) ? "unlike" : "like";
+
+    if (likeUnlike === "like") {
+      post.likes.push(user);
+    } else {
+      post.likes = post.likes.filter(
+        (like) => like.toString() !== user.toString()
+      );
+    }
+
+    await post.save();
+    res.status(200).json({ message: `Post ${likeUnlike}d successfully` });
+  } catch (error) {
+    console.log("Error in likeUnlikePost controller: ", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+export const commentOnPost = async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+
+    const comment = {
+      user: req.user._id,
+      text: req.body.text,
+      createdAt: new Date(),
+    };
+
+    post.comments.push(comment);
+    await post.save();
+    res.status(200).json({ message: "Comment added successfully" });
+  } catch (error) {
+    console.log("Error in commentOnPost controller: ", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
 
 export const deletePost = async (req, res) => {
   try {
