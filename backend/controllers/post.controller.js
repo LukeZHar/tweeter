@@ -67,21 +67,26 @@ export const likeUnlikePost = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
 export const commentOnPost = async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id);
+    const { text } = req.body;
+    const userId = req.user._id;
+    const postId = req.params.id;
+    if (!text) {
+      return res.status(400).json({ error: "Comment text is required" });
+    }
+
+    const post = await Post.findById(postId);
     if (!post) {
       return res.status(404).json({ error: "Post not found" });
     }
 
     const comment = {
-      user: req.user._id,
-      text: req.body.text,
+      user: userId,
+      text,
       createdAt: new Date(),
     };
-    if (!comment.text) {
-      return res.status(400).json({ error: "Comment cannot be empty" });
-    }
 
     post.comments.push(comment);
 
@@ -92,7 +97,7 @@ export const commentOnPost = async (req, res) => {
     });
     await newNotification.save();
     await post.save();
-    res.status(200).json({ message: "Comment added successfully" });
+    res.status(200).json({ message: "Comment added successfully", post });
   } catch (error) {
     console.log("Error in commentOnPost controller: ", error);
     res.status(500).json({ error: "Internal server error" });
