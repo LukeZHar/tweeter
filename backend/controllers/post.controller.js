@@ -39,29 +39,35 @@ export const createPost = async (req, res) => {
 
 export const likeUnlikePost = async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id);
+    const userId = req.user._id;
+    const { id: postId } = req.params;
+
+    const post = await Post.findById(postId);
     if (!post) {
       return res.status(404).json({ error: "Post not found" });
     }
-    const user = req.user._id;
-    const likeUnlike = post.likes.includes(user) ? "unlike" : "like";
+    const likeUnlike = post.likes.includes(userId);
 
-    if (likeUnlike === "like") {
-      post.likes.push(user);
+    if (likeUnlike) {
+      await Post.updateOne({ _id: postId }, { $pull: { likes: userId } });
+      res.status(200).json({ message: "Post unliked successfully" });
+      await Notification.findOneAndDelete({
+        type: "like",
+        from: userId,
+        to: post.user,
+      });
     } else {
-      post.likes = post.likes.filter(
-        (like) => like.toString() !== user.toString()
-      );
-    }
+      post.likes.push(userId);
+      await post.save();
 
-    const newNotification = new Notification({
-      type: "like",
-      from: req.user._id,
-      to: post.user,
-    });
-    await newNotification.save();
-    await post.save();
-    res.status(200).json({ message: `Post ${likeUnlike}d successfully` });
+      const newNotification = new Notification({
+        type: "like",
+        from: userId,
+        to: post.user,
+      });
+      await newNotification.save();
+      res.status(200).json({ message: "Post liked successfully" });
+    }
   } catch (error) {
     console.log("Error in likeUnlikePost controller: ", error);
     res.status(500).json({ error: "Internal server error" });
@@ -128,5 +134,17 @@ export const deletePost = async (req, res) => {
   } catch (error) {
     console.log("Error in deletePost controller: ", error);
     res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const getAllPosts = async (req, res) => {
+  try {
+    const posts = await Post.find().sort({ createdAt: -1 });
+
+    if (posts.length === 0) return res.status(200).json({ error: "No posts found" });
+    res.status(200).json(posts);
+  } catch (error) {
+    console.log("Error in getAllPosts controller: ", error);
+    res.status(500).json({ error: "Internal server error" })    
   }
 };
