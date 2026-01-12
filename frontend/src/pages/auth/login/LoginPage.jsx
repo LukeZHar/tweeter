@@ -1,7 +1,9 @@
 import { useState } from "react"
-import XSvg from "../../../components/svgs/X";
-import { MdOutlineMail, MdPassword } from "react-icons/md";
 import { Link } from "react-router-dom";
+
+import XSvg from "../../../components/svgs/X";
+
+import { MdOutlineMail, MdPassword } from "react-icons/md";
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
