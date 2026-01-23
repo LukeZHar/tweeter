@@ -28,18 +28,21 @@ const SignUpPage = () => {
           },
           body: JSON.stringify({ email, username, fullName, password }),
         });
-        if (!res.ok) {
-          throw new Error("Something went wrong, Failed to sign up");
-        }
         const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error);
+        }
         if (data.error) {
           throw new Error(data.error);
         }
         return data;
       } catch (error) {
         console.error("Error during sign up:", error);
-        toast.error(error.message || "Sign up failed");
+        throw error;
       }
+    },
+    onSuccess: () => {
+      toast.success("Account created successfully! Please log in.");
     },
   });
 
