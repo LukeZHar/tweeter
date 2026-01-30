@@ -2,6 +2,7 @@ import User from "../models/user.model.js";
 import Post from "../models/post.model.js";
 import Notification from "../models/notification.model.js";
 import { v2 as cloudinary } from "cloudinary";
+import { useId } from "react";
 
 export const createPost = async (req, res) => {
   try {
@@ -51,6 +52,10 @@ export const likeUnlikePost = async (req, res) => {
     if (likeUnlike) {
       await Post.updateOne({ _id: postId }, { $pull: { likes: userId } });
       await User.updateOne({ _id: userId }, { $pull: { likedPosts: postId } });
+
+      const updatedLikes = post.likes.filter(
+        (id) => id.toString() !== userId.toString(),
+      );
       res.status(200).json({ message: "Post unliked successfully" });
       await Notification.findOneAndDelete({
         type: "like",
@@ -68,7 +73,9 @@ export const likeUnlikePost = async (req, res) => {
         to: post.user,
       });
       await newNotification.save();
-      res.status(200).json({ message: "Post liked successfully" });
+
+      const updatedLikes = post.likes;
+      res.status(200).json(updatedLikes);
     }
   } catch (error) {
     console.log("Error in likeUnlikePost controller: ", error);
