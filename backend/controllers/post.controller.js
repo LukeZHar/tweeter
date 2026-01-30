@@ -2,7 +2,6 @@ import User from "../models/user.model.js";
 import Post from "../models/post.model.js";
 import Notification from "../models/notification.model.js";
 import { v2 as cloudinary } from "cloudinary";
-import { useId } from "react";
 
 export const createPost = async (req, res) => {
   try {
@@ -56,7 +55,7 @@ export const likeUnlikePost = async (req, res) => {
       const updatedLikes = post.likes.filter(
         (id) => id.toString() !== userId.toString(),
       );
-      res.status(200).json({ message: "Post unliked successfully" });
+      res.status(200).json(updatedLikes);
       await Notification.findOneAndDelete({
         type: "like",
         from: userId,
