@@ -8,7 +8,7 @@ Tweeter is a full-stack social media application that allows users to create acc
 
 ## 🔗 Links
 
-- **Live App:** [Coming Soon]
+- **Live App:** [https://tweeter-6dfj.onrender.com](https://tweeter-6dfj.onrender.com)
 - **GitHub:** [https://github.com/LukeZHar/tweeter](https://github.com/LukeZHar/tweeter)
 - **YouTube:** [Coming Soon]
 - **Portfolio Projects:** [https://lzh-portf.vercel.app/projects](https://lzh-portf.vercel.app/projects)
@@ -99,6 +99,12 @@ npm run dev
 ```bash
 npm start
 ```
+
+## Login for testing
+
+janedoe - 1234567
+bobdoe - 123456
+jendoe - 123456
 
 ## 📦 Project Structure
 
