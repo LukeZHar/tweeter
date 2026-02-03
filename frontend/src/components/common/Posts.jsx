@@ -35,7 +35,7 @@ const Posts = ({ feedType, username, userId }) => {
         if (!res.ok) {
           throw new Error(data.error || "Failed to fetch posts");
         }
-        return data;
+        return Array.isArray(data) ? data : [];
       } catch (error) {
         throw new Error(error);
       }
@@ -55,7 +55,7 @@ const Posts = ({ feedType, username, userId }) => {
           <PostSkeleton />
         </div>
       )}
-      {!isLoading && !isRefetching && posts?.length === 0 && (
+      {!isLoading && !isRefetching && !posts?.length && (
         <p className="text-center my-4">No posts in the tab. Switch! 👻</p>
       )}
       {!isLoading && !isRefetching && posts && (
